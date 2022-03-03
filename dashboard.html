@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src='https://d3js.org/d3.v7.min.js'></script>
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/d3-selection@3"></script>
+
+    <style>
+        
+        .svg-container {
+            display: inline-block;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding-bottom: 100%; /* aspect ratio */
+            vertical-align: top;
+            overflow: hidden;
+        }
+
+        .responsive_svg {
+            display: inline-block;
+            position: absolute;
+            top: 10px;
+            left: 0;
+        }
+
+    </style>
+
+    <script>
+
+        var svg = d3.select('body')
+            .append('div')
+            .classed('container', true)
+            .append('svg')
+            .attr('preserveAspectRatio', 'xMinYMin meet')
+            .attr('viewBox', '0 0 600 200')
+            .classed('responsive_svg', true);
+
+            
+
+        d3.csv('owid-covid-data.csv').then( function(data) {
+
+            const groups = data.reduce((groups, item) => {
+                const group = (groups[item.location] || []);
+                group.push(item);
+                groups[item.location] = group;
+                return groups;
+                }, {});
+
+
+            const deaths = [];
+
+            const nonCountries = ["Europe", "European Union", "High income", "Lower mideel income", 
+                                    "North America", "South America", "Africa", "Upper middle income",
+                                    "World"]
+
+            for(i in groups) {
+                var country = i;
+                var total = 0;
+                for(d in groups[i]) {
+                    const deaths = parseInt(groups[i][parseInt(d)].new_deaths)
+                    if(!isNaN(deaths)) {
+                        total += deaths;
+                    }
+                }
+                if(total > 50000 && !nonCountries.includes(i)) {
+                    deaths.push({country : i,
+                                 deaths: total})
+                }
+                
+            }
+
+            console.log(deaths);
+
+            var color = d3.scaleSequential().domain([0,d3.max(deaths, function(d) { return +d.deaths})]).interpolator(d3.interpolateTurbo);
+
+            console.log(d3.max(deaths, function(d) { return +d.deaths}));
+
+            var simulation = d3.forceSimulation(deaths)
+                .force('charge', d3.forceManyBody().strength(5))
+                .force('center', d3.forceCenter(150, 75))
+                .force('collision', d3.forceCollide().radius(function(d) {
+                    return d.deaths/50000
+                }))
+                .on('tick', ticked);
+
+            function ticked() {
+            var u = d3.select('svg')
+                .selectAll('circle')
+                .data(deaths)
+                .join('circle')
+                .attr('fill', function(d,i) {
+                    return color(d.deaths);
+                })
+                .attr('r', function(d) {
+                    return d.deaths/50000
+                })
+                .attr('cx', function(d) {
+                    return d.x
+                })
+                .attr('cy', function(d) {
+                    return d.y
+                })
+            }
+
+/*             function ticked() {
+
+                d3.select('svg')
+                        .selectAll('circle')
+                        .data(deaths)
+                        .enter()
+                        .append('circle')
+                        .attr('fill', function(d,i) {
+                            return color(d.deaths);
+                        })
+                        .attr('r', function(d) {
+                            console.log(d.deaths/1000);
+                            return d.deaths/100000
+                        })
+                        .attr('cx', function(d) {
+                            return d.x
+                        })
+                        .attr('cy', function(d) {
+                            return d.y
+                        })
+            } */
+
+
+        });
+
+    </script>
+</body>
+
+</html>
