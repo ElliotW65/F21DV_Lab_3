@@ -30,8 +30,11 @@
 
     </style>
 
-    <p id="value"></p>
-    <div id="slider"></div>
+    <div id="slider-container">
+        <p id="value"></p>
+        <div id="slider"></div>
+    </div>
+
 
     <script>
 
@@ -42,6 +45,17 @@
             .attr('preserveAspectRatio', 'xMinYMin meet')
             .attr('viewBox', '0 0 600 200')
             .classed('responsive_svg', true);
+
+/*         var sliderContainer = svg.append('div')
+            .classed('slider-container', true)
+
+        sliderContainer.append('p')
+            .classed('value', true)
+
+        sliderContainer.append('div')
+            .classed('slider', true) */
+
+
 
             
 
@@ -54,6 +68,31 @@
                 return groups;
                 }, {});
 
+            const monthGroup = {}
+
+            for(i in data) {
+                //console.log(data[i]);
+                var date = new Date(data[i].date)
+                if(!isNaN(date)) {
+                    monthGroup[date.getUTCMonth() + " - " + date.getUTCFullYear()] = [];
+                }
+            }
+
+            for(i in data) {
+                var date = new Date(data[i].date)
+                var key = date.getUTCMonth() + " - " + date.getUTCFullYear()
+                if(!isNaN(date)) {
+                    monthGroup[key].push(data[i]);
+                }
+                
+
+            }
+
+            console.log(monthGroup)
+
+/* 
+            console.log(quartGroups); */
+
 
             const deaths = [];
 
@@ -61,7 +100,23 @@
                                     "North America", "South America", "Africa", "Upper middle income",
                                     "World"]
 
-            for(i in groups) {
+            for(i in monthGroup) {
+                var country = i;
+                var total = 0;
+                for(d in monthGroup[i]) {
+                    const deaths = parseInt(monthGroup[i][parseInt(d)].new_deaths)
+                    if(!isNaN(deaths)) {
+                        total += deaths;
+                    }
+                }
+                if(total > 50000 && !nonCountries.includes(i)) {
+                    deaths.push({country : i,
+                                 deaths: total})
+                }
+                
+            }
+
+/*             for(i in groups) {
                 var country = i;
                 var total = 0;
                 for(d in groups[i]) {
@@ -75,7 +130,7 @@
                                  deaths: total})
                 }
                 
-            }
+            } */
 
             console.log(deaths);
 
@@ -116,7 +171,7 @@
             var slider = d3
                 .sliderHorizontal()
                 .min(0)
-                .max(10)
+                .max(36)
                 .step(1)
                 .width(100)
                 .displayValue(false)
@@ -126,13 +181,6 @@
 
             svg.call(slider);
 
-/*             d3.select('#slider')
-                .append('svg')
-                .attr('width', 500)
-                .attr('height', 100)
-                .append('g')
-                .attr('transform', 'translate(30,30)')
-                .call(slider); */
 
     </script>
 </body>
