@@ -68,21 +68,57 @@
 
             var link = "https://api.mapbox.com/geocoding/v5/mapbox.places/United%20Kingdom.json?access_token=pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ"
 
-            function httpGetAsync(URL, callback) {
+
+            function urlFormat(country) {
+                    const stringArr = country.split(' ');
+                    if(stringArr.length > 1) {
+                        return stringArr.join("%20")
+                    }
+                    else {
+                        return country;
+                    }
+                }
+
+
+            function urlBuilder(country) {
+                    var countryFormat = urlFormat(country);
+                    var urlPrefix = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
+                    var accessToken = ".json?access_token=pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ";
+                    return urlPrefix + countryFormat + accessToken;
+                }
+
+            function httpGetAsync(country, callback) {
+                var URL = urlBuilder(country);
                 var xmlHttp = new XMLHttpRequest();
                 xmlHttp.onreadystatechange = function() { 
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-                        callback(xmlHttp.responseText);
+                        callback(xmlHttp.responseText, country);
                 }
                 xmlHttp.open("GET", URL, true); // true for asynchronous 
                 xmlHttp.send(null);
             }
 
-            function displayCoords(data) {
-                return data;
+            var coords = []
+
+
+            function returnCenter(data, country) {
+                
+                const info = JSON.parse(data);
+                //console.log(info.features);
+                coords.push({country : country,
+                            coords: info.features["0"].center});
             }
 
-            //httpGetAsync(link, displayCoords);
+
+/*             function httpGet(link) {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open( "GET", link, false ); // false for synchronous request
+                xmlHttp.send( null );
+                const info = JSON.parse(xmlHttp.responseText);
+                return info.features["0"].center;
+            } */
+
+            //console.log(httpGetAsync(link, returnCenter));
 
             d3.csv('owid-covid-data.csv').then( function(data) {
 
@@ -141,6 +177,27 @@
                     return newGroups;
                 }
 
+                
+                function getCoordinates(data) {
+                    for(i in data) {
+                        const countryInd = i;
+                        //const url = urlBuilder(i);
+                        var center = httpGetAsync(i, returnCenter)
+                       //break;
+                    }
+                }
+
+
+                getCoordinates(groupByCountry(month))
+                
+                console.log(coords);
+
+
+
+
+
+
+
                 function sumDeaths(data) {
 
                     const deaths = [];
@@ -150,7 +207,7 @@
                     const country = data[countryInd];
                     const total = 0;
                     const url = urlBuilder(i);
-                    httpGetAsync(URL, callback)
+                    //httpGetAsync(URL, callback)
                     console.log("Country: ", url);
                     break;
                     for(d of country) {
@@ -172,22 +229,9 @@
                 var str = 'Bosnia'
                 console.log("Split length", str.split(' '));
 
-                function urlFormat(country) {
-                    const stringArr = country.split(' ');
-                    if(stringArr.length > 1) {
-                        return stringArr.join("%20")
-                    }
-                    else {
-                        return country;
-                    }
-                }
 
-                function urlBuilder(country) {
-                    var countryFormat = urlFormat(country);
-                    var urlPrefix = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
-                    var accessToken = ".json?access_token=pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ";
-                    return urlPrefix + countryFormat + accessToken;
-                }
+
+
 
                 console.log(urlBuilder(urlFormat('Bosnia and Herzegovina')))
 
