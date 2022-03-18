@@ -15,6 +15,11 @@
     <body>
         <div id="map"></div>
         <script>
+
+            const fs = require('fs');
+
+
+
             mapboxgl.accessToken = 'pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ';
             const map = new mapboxgl.Map({
             container: 'map', // container ID
@@ -43,28 +48,7 @@
                 [-74.55, 40.0],
                 ];
 
-            var dots = svg
-                .selectAll("circle")
-                .data(data)
-                .enter()
-                .append("circle")
-                .attr("r", 20)
-                .style("fill", "#ff0000");
 
-            function render() {
-                dots
-                .attr("cx", function (d) {
-                return project(d).x;
-                })
-                .attr("cy", function (d) {
-                return project(d).y;
-                });
-            }
-
-            map.on("viewreset", render);
-            map.on("move", render);
-            map.on("moveend", render);
-            render(); // Call once to render
 
             var link = "https://api.mapbox.com/geocoding/v5/mapbox.places/United%20Kingdom.json?access_token=pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ"
 
@@ -98,15 +82,19 @@
                 xmlHttp.send(null);
             }
 
-            var coords = []
+            var coords = {}
 
 
             function returnCenter(data, country) {
                 
                 const info = JSON.parse(data);
                 //console.log(info.features);
-                coords.push({country : country,
-                            coords: info.features["0"].center});
+/*                 coords.push({country : country,
+                            coords: info.features["0"].center}); */
+                //coords[country] = info.features["0"].center
+
+                fs.writeFileSync('/tmp/test-sync', {country: country, coords: info.features["0"].center});
+
             }
 
 
@@ -177,6 +165,8 @@
                     return newGroups;
                 }
 
+                console.log("All countries: ", groupByCountry(data));
+
                 
                 function getCoordinates(data) {
                     for(i in data) {
@@ -192,50 +182,38 @@
                 
                 console.log(coords);
 
+                
 
 
-
-
-
+                var deaths = [];
 
                 function sumDeaths(data) {
 
                     const deaths = [];
 
                     for(i in data) {
-                    const countryInd = i;
-                    const country = data[countryInd];
-                    const total = 0;
-                    const url = urlBuilder(i);
-                    //httpGetAsync(URL, callback)
-                    console.log("Country: ", url);
-                    break;
-                    for(d of country) {
-                        const deaths = parseInt(d.new_deaths)
-                        if(!isNaN(deaths)) {
-                            total += deaths;
+                
+                        const countryInd = i;
+                        const country = data[countryInd];
+                        var total = 0;
+                        for(d of country) {
+                            const deaths = parseInt(d.new_deaths)
+                            if(!isNaN(deaths)) {
+                                total += deaths;
+                            }
                         }
-                    }
-                    if(total > 100 && !nonCountries.includes(i)) {
-                        deaths.push({country : i,
-                                    deaths: total})
-                    }
+                        console.log("i: ", coords[i]);
+                        break;
+                        if(total > 100 && !nonCountries.includes(i)) {
+                            deaths.push({country : i,
+                                        deaths: total})
+                        }
                     
                     }
 
                     return deaths;
                 }
 
-                var str = 'Bosnia'
-                console.log("Split length", str.split(' '));
-
-
-
-
-
-                console.log(urlBuilder(urlFormat('Bosnia and Herzegovina')))
-
-                console.log(urlFormat('Bosnia'))
 
                 console.log("New Deaths func: ", sumDeaths(groupByCountry(month)));
 
@@ -250,7 +228,30 @@
 
                 console.log(d3.max(deaths, function(d) { return +d.deaths}));
 
+                var dots = svg
+                .selectAll("circle")
+                .data(deaths)
+                .enter()
+                .append("circle")
+                .attr("r", 20)
+                .style("fill", "#ff0000");
 
+                function render() {
+                    dots
+                    .attr("cx", function (d) {
+                    return project(d).x;
+                    })
+                    .attr("cy", function (d) {
+                    return project(d).y;
+                    });
+                }
+
+                map.on("viewreset", render);
+                map.on("move", render);
+                map.on("moveend", render);
+                render(); // Call once to render
+
+                console.log("Coords Test: ", Object.keys(coords));
 
 
 

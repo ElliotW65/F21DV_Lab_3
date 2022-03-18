@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Test <Map></Map></title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+    <script src='https://d3js.org/d3.v7.min.js'></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; height: 50%; width: 50%; }
+    </style>
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/d3-selection@3"></script>
+    <script src="https://unpkg.com/d3-simple-slider"></script>
+    
+
+    <style>
+        
+        .svg-container {
+            display: inline-block;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding-bottom: 100%; /* aspect ratio */
+            vertical-align: top;
+            overflow: hidden;
+        }
+
+        .responsive_svg {
+            display: inline-block;
+            position: absolute;
+            top: 10px;
+            left: 0;
+        }
+
+    </style>
+
+<!--     <div class="row align-items-center">
+        <div class="col-sm-2"><p id="value-time"></p></div>
+        <div class="col-sm"><div id="slider-time"></div></div>
+    </div> -->
+
+
+    <script>
+        <div id="map"></div>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ';
+            const map = new mapboxgl.Map({
+            container: 'map', // container ID
+            style: 'mapbox://styles/mapbox/streets-v11', // style URL
+            center: [-74.5, 40], // starting position [lng, lat]
+            zoom: 9 // starting zoom
+            });
+
+            function project(data) {
+                return map.project(new mapboxgl.LngLat(data[0], data[1]));
+            }
+
+        var svg = d3.select('body')
+            .append('div')
+            .classed('container', true)
+            .append('svg')
+            .attr('preserveAspectRatio', 'xMinYMin meet')
+            .attr('viewBox', '0 0 600 200')
+            .classed('responsive_svg', true);
+
+/*         var sliderContainer = svg.append('div')
+            .classed('slider-container', true)
+
+        sliderContainer.append('p')
+            .classed('value', true)
+
+        sliderContainer.append('div')
+            .classed('slider', true) */
+
+
+
+            
+
+        d3.csv('owid-covid-data.csv').then( function(data) {
+
+
+
+            const monthGroup = {}
+
+            const monthDates = {}
+
+            for(i in data) {
+                //console.log(data[i]);
+                var date = new Date(data[i].date)
+                var key = date.getUTCMonth() + " - " + date.getUTCFullYear()
+                if(!isNaN(date)) {
+                    monthGroup[key] = [];
+                    monthDates[key] = new Date(date.getUTCFullYear(), date.getUTCMonth());
+                }
+            }
+
+            for(i in data) {
+                var date = new Date(data[i].date)
+                var key = date.getUTCMonth() + " - " + date.getUTCFullYear()
+                if(!isNaN(date)) {
+                    monthGroup[key].push(data[i]);
+                }
+                
+
+            }
+
+            console.log(monthDates);
+
+            console.log(monthGroup);
+
+/* 
+            console.log(quartGroups); */
+
+
+            
+
+            const nonCountries = ["Europe", "European Union", "High income", "Lower mideel income", 
+                                    "North America", "South America", "Africa", "Upper middle income",
+                                    "World"]
+
+            console.log("Monthgroup 0: ", monthGroup["0 - 2020"]);
+
+            var month = monthGroup["6 - 2020"]
+
+            function groupByCountry(data) {
+                const newGroups = data.reduce((groups, item) => {
+                const group = (groups[item.location] || []);
+                group.push(item);
+                groups[item.location] = group;
+                return groups;
+                }, {});
+
+                return newGroups;
+            }
+
+            function sumDeaths(data) {
+
+                const deaths = [];
+
+                for(i in data) {
+                var countryInd = i;
+                const country = data[countryInd];
+                var total = 0;
+                for(d of country) {
+                    const deaths = parseInt(d.new_deaths)
+                    if(!isNaN(deaths)) {
+                        total += deaths;
+                    }
+                }
+                if(total > 100 && !nonCountries.includes(i)) {
+                    deaths.push({country : i,
+                                 deaths: total})
+                }
+                
+                }
+
+                return deaths;
+            }
+
+            //console.log("New Deaths func: ", sumDeaths(groupByCountry(month)));
+
+            console.log("Country Grouping: ", groupByCountry(data));
+
+            var deaths = sumDeaths(groupByCountry(month));
+
+            var sliderValues = Object.keys(monthGroup);
+
+            console.log(sliderValues.length);
+            
+
+            var color = d3.scaleSequential().domain([0,d3.max(deaths, function(d) { return +d.deaths})]).interpolator(d3.interpolateTurbo);
+
+            console.log(d3.max(deaths, function(d) { return +d.deaths}));
+
+
+            
+
+
+            });
+
+
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
