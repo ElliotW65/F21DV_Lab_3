@@ -16,8 +16,6 @@
         <div id="map"></div>
         <script>
 
-            const fs = require('fs');
-
 
 
             mapboxgl.accessToken = 'pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ';
@@ -50,7 +48,7 @@
 
 
 
-            var link = "https://api.mapbox.com/geocoding/v5/mapbox.places/United%20Kingdom.json?access_token=pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ"
+/*             var link = "https://api.mapbox.com/geocoding/v5/mapbox.places/United%20Kingdom.json?access_token=pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ"
 
 
             function urlFormat(country) {
@@ -82,35 +80,40 @@
                 xmlHttp.send(null);
             }
 
-            var coords = {}
+            var coords = {} */
 
 
-            function returnCenter(data, country) {
+/*             function returnCenter(data, country) {
                 
                 const info = JSON.parse(data);
-                //console.log(info.features);
-/*                 coords.push({country : country,
-                            coords: info.features["0"].center}); */
-                //coords[country] = info.features["0"].center
+                coords[country] = info.features["0"].center
 
-                fs.writeFileSync('/tmp/test-sync', {country: country, coords: info.features["0"].center});
-
-            }
-
-
-/*             function httpGet(link) {
-                var xmlHttp = new XMLHttpRequest();
-                xmlHttp.open( "GET", link, false ); // false for synchronous request
-                xmlHttp.send( null );
-                const info = JSON.parse(xmlHttp.responseText);
-                return info.features["0"].center;
             } */
-
-            //console.log(httpGetAsync(link, returnCenter));
 
             d3.csv('owid-covid-data.csv').then( function(data) {
 
+                let file = "coordinates.csv";
 
+                function readTextFile(file)
+                {
+                    var rawFile = new XMLHttpRequest();
+                    rawFile.open("GET", file, false);
+                    rawFile.onreadystatechange = function ()
+                    {
+                        if(rawFile.readyState === 4)
+                        {
+                            if(rawFile.status === 200 || rawFile.status == 0)
+                            {
+                                var loadedData = JSON.parse(rawFile.responseText);
+                            }
+                        }
+                    }
+                    rawFile.send(null);
+                }
+
+                readTextFile("file:///C:/Users/Ellio/OneDrive/Documents/Masters/Y2/S2/F21DV Data Visualisation and Analytics/F21DV_Lab_3/coordinates.csv");
+
+                console.log(loadedData);
 
                 const monthGroup = {}
 
@@ -251,7 +254,7 @@
                 map.on("moveend", render);
                 render(); // Call once to render
 
-                console.log("Coords Test: ", Object.keys(coords));
+                console.log("Coords Test: ", coords);
 
 
 
