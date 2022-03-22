@@ -7,6 +7,9 @@
         <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
         <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
         <script src='https://d3js.org/d3.v7.min.js'></script>
+        <script src="/require.js"></script>
+        <script type="text/javascript" src="coordinates.js"></script>
+
         <style>
             body { margin: 0; padding: 0; }
             #map { position: absolute; top: 0; bottom: 0; height: 50%; width: 50%; }
@@ -46,81 +49,13 @@
                 [-74.55, 40.0],
                 ];
 
-
-
-/*             var link = "https://api.mapbox.com/geocoding/v5/mapbox.places/United%20Kingdom.json?access_token=pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ"
-
-
-            function urlFormat(country) {
-                    const stringArr = country.split(' ');
-                    if(stringArr.length > 1) {
-                        return stringArr.join("%20")
-                    }
-                    else {
-                        return country;
-                    }
-                }
-
-
-            function urlBuilder(country) {
-                    var countryFormat = urlFormat(country);
-                    var urlPrefix = "https://api.mapbox.com/geocoding/v5/mapbox.places/";
-                    var accessToken = ".json?access_token=pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ";
-                    return urlPrefix + countryFormat + accessToken;
-                }
-
-            function httpGetAsync(country, callback) {
-                var URL = urlBuilder(country);
-                var xmlHttp = new XMLHttpRequest();
-                xmlHttp.onreadystatechange = function() { 
-                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-                        callback(xmlHttp.responseText, country);
-                }
-                xmlHttp.open("GET", URL, true); // true for asynchronous 
-                xmlHttp.send(null);
-            }
-
-            var coords = {} */
-
-
-/*             function returnCenter(data, country) {
-                
-                const info = JSON.parse(data);
-                coords[country] = info.features["0"].center
-
-            } */
-
             d3.csv('owid-covid-data.csv').then( function(data) {
-
-                let file = "coordinates.csv";
-
-                function readTextFile(file)
-                {
-                    var rawFile = new XMLHttpRequest();
-                    rawFile.open("GET", file, false);
-                    rawFile.onreadystatechange = function ()
-                    {
-                        if(rawFile.readyState === 4)
-                        {
-                            if(rawFile.status === 200 || rawFile.status == 0)
-                            {
-                                var loadedData = JSON.parse(rawFile.responseText);
-                            }
-                        }
-                    }
-                    rawFile.send(null);
-                }
-
-                readTextFile("file:///C:/Users/Ellio/OneDrive/Documents/Masters/Y2/S2/F21DV Data Visualisation and Analytics/F21DV_Lab_3/coordinates.csv");
-
-                console.log(loadedData);
 
                 const monthGroup = {}
 
                 const monthDates = {}
 
                 for(i in data) {
-                    //console.log(data[i]);
                     var date = new Date(data[i].date)
                     var key = date.getUTCMonth() + " - " + date.getUTCFullYear()
                     if(!isNaN(date)) {
@@ -139,21 +74,13 @@
 
                 }
 
-                console.log(monthDates);
-
-                console.log(monthGroup);
-
-                /* 
-                console.log(quartGroups); */
-
-
 
 
                 const nonCountries = ["Europe", "European Union", "High income", "Lower mideel income", 
                                         "North America", "South America", "Africa", "Upper middle income",
                                         "World"]
 
-                console.log("Monthgroup 0: ", monthGroup["0 - 2020"]);
+                //console.log("Monthgroup 0: ", monthGroup["0 - 2020"]);
 
                 var month = monthGroup["6 - 2020"]
 
@@ -168,24 +95,9 @@
                     return newGroups;
                 }
 
-                console.log("All countries: ", groupByCountry(data));
-
+                //console.log("All countries: ", groupByCountry(data));
                 
-                function getCoordinates(data) {
-                    for(i in data) {
-                        const countryInd = i;
-                        //const url = urlBuilder(i);
-                        var center = httpGetAsync(i, returnCenter)
-                       //break;
-                    }
-                }
 
-
-                getCoordinates(groupByCountry(month))
-                
-                console.log(coords);
-
-                
 
 
                 var deaths = [];
@@ -198,15 +110,17 @@
                 
                         const countryInd = i;
                         const country = data[countryInd];
+                        //console.log("Country: ", country);
                         var total = 0;
                         for(d of country) {
+                            //console.log("i: ", d);
+                            //break;
                             const deaths = parseInt(d.new_deaths)
                             if(!isNaN(deaths)) {
                                 total += deaths;
                             }
                         }
-                        console.log("i: ", coords[i]);
-                        break;
+                        //break;
                         if(total > 100 && !nonCountries.includes(i)) {
                             deaths.push({country : i,
                                         deaths: total})
@@ -217,19 +131,26 @@
                     return deaths;
                 }
 
+                console.log("Test1: ", groupByCountry(month));
+
+                const monthTest = groupByCountry(month);
+
+                console.log("Test2: ", sumDeaths(monthTest));
+
 
                 console.log("New Deaths func: ", sumDeaths(groupByCountry(month)));
 
                 var deaths = sumDeaths(groupByCountry(month));
 
-                var sliderValues = Object.keys(monthGroup);
+                let arr3 = deaths.map((item, i) => Object.assign({}, item, coordinates[i]));
 
-                console.log(sliderValues.length);
+                console.log("arr3: ", arr3);
+
 
 
                 var color = d3.scaleSequential().domain([0,d3.max(deaths, function(d) { return +d.deaths})]).interpolator(d3.interpolateTurbo);
 
-                console.log(d3.max(deaths, function(d) { return +d.deaths}));
+                //console.log(d3.max(deaths, function(d) { return +d.deaths}));
 
                 var dots = svg
                 .selectAll("circle")
@@ -253,8 +174,6 @@
                 map.on("move", render);
                 map.on("moveend", render);
                 render(); // Call once to render
-
-                console.log("Coords Test: ", coords);
 
 
 
