@@ -142,20 +142,10 @@
 
                 console.log("arr3: ", arr3);
 
+                var redcolor = d3.scaleSequential().domain([0,d3.max(deaths, function(d) { return +d.deaths})]).range(["white", "red"]);
 
-
-                var color = d3.scaleSequential().domain([0,d3.max(deaths, function(d) { return +d.deaths})]).interpolator(d3.interpolateTurbo);
-
-                //console.log(d3.max(deaths, function(d) { return +d.deaths}));
 
                 console.log("Afghan X: ", project(arr3[0].long).x);
-
-                var testdata = [
-                [-74.5, 40.05],
-                [-74.45, 40.0],
-                [-74.55, 40.0],
-                ];
-
 
 
                 var dots = svg
@@ -163,22 +153,24 @@
                 .data(arr3)
                 .enter()
                 .append("circle")
-                .attr("r", 20)
-                .style("fill", "#ff0000");
+                .attr("r", function(d) {
+                    return d.deaths / 500;
+                })
+                .style("fill", function(d) {
+                    return redcolor(d.deaths);
+                });
 
                 console.log(dots);
 
                 function render() {
                     dots
                     .attr("cx", function (d) {
-                        
                         var longLat = [+d.long, +d.lat];
-                        console.log("longLat: ", longLat);
-                    return project(longLat).x;
+                        return project(longLat).x;
                     })
                     .attr("cy", function (d) {
                         var longLat = [+d.long, +d.lat];
-                    return project(longLat).y;
+                        return project(longLat).y;
                     });
                 }
 
