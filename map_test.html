@@ -7,12 +7,16 @@
         <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
         <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
         <script src='https://d3js.org/d3.v7.min.js'></script>
+        <script src="https://d3js.org/d3.v6.js"></script>
+        <script src="https://unpkg.com/d3-simple-slider"></script>
         <script src="/require.js"></script>
         <script type="text/javascript" src="coordinates.js"></script>
 
         <style>
             body { margin: 0; padding: 0; }
             #map { position: absolute; top: 0; bottom: 0; height: 50%; width: 50%; }
+            #slider {position: absolute; top: 50%; width: 50%;}
+            #value {position: absolute; top: 55%;}
         </style>
     </head>
     <body>
@@ -76,7 +80,6 @@
                                         "North America", "South America", "Africa", "Upper middle income",
                                         "World"]
 
-                //console.log("Monthgroup 0: ", monthGroup["0 - 2020"]);
 
                 var month = monthGroup["6 - 2020"]
 
@@ -91,10 +94,6 @@
                     return newGroups;
                 }
 
-                //console.log("All countries: ", groupByCountry(data));
-                
-
-
 
                 var deaths = [];
 
@@ -106,17 +105,13 @@
                 
                         const countryInd = i;
                         const country = data[countryInd];
-                        //console.log("Country: ", country);
                         var total = 0;
                         for(d of country) {
-                            //console.log("i: ", d);
-                            //break;
                             const deaths = parseInt(d.new_deaths)
                             if(!isNaN(deaths)) {
                                 total += deaths;
                             }
                         }
-                        //break;
                         if(total > 100 && !nonCountries.includes(i)) {
                             deaths.push({country : i,
                                         deaths: total})
@@ -127,43 +122,32 @@
                     return deaths;
                 }
 
-                console.log("Test1: ", groupByCountry(month));
-
                 const monthTest = groupByCountry(month);
-
-                console.log("Test2: ", sumDeaths(monthTest));
-
-
-                console.log("New Deaths func: ", sumDeaths(groupByCountry(month)));
 
                 var deaths = sumDeaths(groupByCountry(month));
 
                 let arr3 = deaths.map((item, i) => Object.assign({}, item, coordinates[i]));
 
-                console.log("arr3: ", arr3);
+                var color = d3.scaleSequential().domain([0,d3.max(deaths, function(d) { return +d.deaths})]).range(["white", "red"]);
 
-                var redcolor = d3.scaleSequential().domain([0,d3.max(deaths, function(d) { return +d.deaths})]).range(["white", "red"]);
+                console.log("Keys: ", Object.keys(monthGroup));
 
+                var dateTicks = Object.keys(monthGroup);
 
-                console.log("Afghan X: ", project(arr3[0].long).x);
-
-
-                var dots = svg
+                var circles = svg
                 .selectAll("circle")
                 .data(arr3)
                 .enter()
                 .append("circle")
                 .attr("r", function(d) {
-                    return d.deaths / 500;
+                    return d.deaths / 800;
                 })
                 .style("fill", function(d) {
-                    return redcolor(d.deaths);
+                    return color(d.deaths);
                 });
 
-                console.log(dots);
-
                 function render() {
-                    dots
+                    circles
                     .attr("cx", function (d) {
                         var longLat = [+d.long, +d.lat];
                         return project(longLat).x;
@@ -174,19 +158,85 @@
                     });
                 }
 
+                function updateCircle(data) {
+
+                    console.log("Tansition called");
+
+                    console.log(data);
+
+                    svg.selectAll("circle")
+                        .data(data)
+                        .transition()
+                        .duration(500)
+                        .attr("cx", function (d) {
+                        var longLat = [+d.long, +d.lat];
+                            return project(longLat).x;
+                        })
+                        .attr("cy", function (d) {
+                            var longLat = [+d.long, +d.lat];
+                            return project(longLat).y;
+                        })
+                        .attr("r", function(d) {
+                            return d.deaths / 800;
+                        })
+                        .attr("fill", function(d) {
+                            return color(d.deaths);
+                        });
+
+                    render();
+                };
+
                 map.on("viewreset", render);
                 map.on("move", render);
                 map.on("moveend", render);
                 render(); // Call once to render
 
+                var sliderBox = document.querySelector("#slider")
+
+                var sliderWidth = sliderBox.offsetWidth;
+
+                console.log(sliderWidth);
+
+                var slider = d3
+                    .sliderBottom()
+                    .min(0)
+                    .max(26)
+                    .step(1)
+                    .width(sliderWidth -120)
+                    .displayValue(false)
+                    .on('onchange', (val) => {
+                        const month = dateTicks[val];
+
+                        //const monthUpdate = groupByCountry(month);
+
+                        console.log("Month: ", month);
+
+                        var newMonthData = monthGroup[month];
+
+                        var deathsUpdate = sumDeaths(groupByCountry(newMonthData));
+
+                        let newData = deathsUpdate.map((item, i) => Object.assign({}, item, coordinates[i]));
+
+                        updateCircle(newData);
+
+                        d3.select('#value').text(month);
+                    });
+
+                d3.select('#slider')
+                    .append('svg')
+                    .attr('width', 500)
+                    .attr('height', 100)
+                    .append('g')
+                    .attr('transform', 'translate(30,30)')
+                    .call(slider);
 
 
-                });
 
-
-
-
+            });
         </script>
+
+        <p id="value"></p>
+        <div id="slider"></div>
     
     </body>
 </html>
