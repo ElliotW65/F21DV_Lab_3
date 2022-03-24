@@ -269,7 +269,10 @@
 
                 d3.select('#slider')
                     .append('svg')
-                    .attr('width', 500)
+                    .attr('width', function() {
+                        console.log("Width: ", document.querySelector("#slider").offsetWidth);
+                        return document.querySelector("#slider").offsetWidth;
+                    })
                     .attr('height', 100)
                     .append('g')
                     .attr('transform', 'translate(30,30)')
