@@ -10,7 +10,7 @@
         <script src="https://d3js.org/d3.v6.js"></script>
         <script src="https://unpkg.com/d3-simple-slider"></script>
         <script src="/require.js"></script>
-        <script type="text/javascript" src="coordinates.js"></script>
+        <script type="text/javascript" src="newCoords.js"></script>
 
         <style>
             body { margin: 0; padding: 0; }
@@ -65,6 +65,8 @@
 
             d3.csv('owid-covid-data.csv').then( function(data) {
 
+                console.log(coordinates);
+
                 const monthGroup = {}
 
                 const monthDates = {}
@@ -93,6 +95,10 @@
                 const nonCountries = ["Europe", "European Union", "High income", "Lower mideel income", 
                                         "North America", "South America", "Africa", "Upper middle income",
                                         "World", "Asia", "Lower middle income", "Oceania", "Low income"]
+
+                const countrySelection = ["United States", "Brazil", "India", "Russia", "Mexico", "Peru",
+                                            "United Kingdom", "Italy", "Indonesia", "Colombia", "France",
+                                            "Iran", "Argentina", "Germany", "Ukraine", "Poland", "Spain"]
 
 
                 var month = monthGroup["6 - 2020"]
@@ -128,11 +134,15 @@
                                 total += deaths;
                             }
                         }
-                        if(total > 100 && !nonCountries.includes(i)) {
+                        if(total > 100 && countrySelection.includes(i)) {
                             const income = country[0].gdp_per_capita
+                            const lng = coordinates[i].long;
+                            const lt = coordinates[i].lat;
                             deaths.push({country : i,
                                         deaths: total,
-                                        gdp: +income})
+                                        gdp: +income,
+                                        long: +lng,
+                                        lat: +lt})
                         }
                     }
 
@@ -142,27 +152,34 @@
                 // Create list of the total death rate of each country
                 var allDeaths = sumDeaths(groupByCountry(data));
 
-                var sortedDeaths = allDeaths.sort(function(a, b) {
-                    return b.gdp - a.gdp;
-                });
+                console.log(allDeaths);
 
-                console.log(sortedDeaths);
+                var newBarData = []
 
-                var barChartCountries = sortedDeaths.slice(0,5);
-
-                console.log(barChartCountries);
-
-                var tempArr = sortedDeaths.slice(164, 169);
-
-                for(i in tempArr) {
-                    barChartCountries.push(tempArr[i]);
+                for(i in allDeaths) {
+                    if(allDeaths[i].deaths >= 100000) {
+                        newBarData.push(allDeaths[i]);
+                    }
                 }
 
-                console.log(barChartCountries);
+
+
+                newBarData.sort(function(a, b) {
+                    return b.deaths - a.deaths;
+                })
+
+                console.log(newBarData);
+
+
+                var barChartCountriesSorted = allDeaths.sort(function(a, b) {
+                    return a.deaths - b.deaths;
+                });
 
                 const monthTest = groupByCountry(month);
 
                 var deaths = sumDeaths(groupByCountry(month));
+
+                console.log("Deaths: ", deaths);
 
                 let arr3 = deaths.map((item, i) => Object.assign({}, item, coordinates[i]));
 
@@ -199,10 +216,6 @@
                 function updateCircle(data) {
 
                     var newColor = d3.scaleSequential().domain([0,d3.max(data, function(d) { return +d.deaths})]).range(["white", "red"]);
-
-                    console.log("Tansition called");
-
-                    console.log(data);
 
                     svg.selectAll("circle")
                         .data(data)
@@ -245,17 +258,11 @@
                     .on('onchange', (val) => {
                         const month = dateTicks[val];
 
-                        //const monthUpdate = groupByCountry(month);
-
-                        console.log("Month: ", month);
-
                         var newMonthData = monthGroup[month];
 
                         var deathsUpdate = sumDeaths(groupByCountry(newMonthData));
 
-                        let newData = deathsUpdate.map((item, i) => Object.assign({}, item, coordinates[i]));
-
-                        updateCircle(newData);
+                        updateCircle(deathsUpdate);
 
                         d3.select('#value').text(month);
                     });
@@ -269,9 +276,9 @@
                     .call(slider);
 
                 // Bar/Line Chart
-                x.domain( barChartCountries.map(function(d) { return d.country; }) );
-                y.domain([0, d3.max(barChartCountries, function(d) { return d.deaths; })]);
-                yTwo.domain([0, d3.max(barChartCountries, function(d) { return d.gdp; })]);
+                x.domain( newBarData.map(function(d) { return d.country; }) );
+                y.domain([0, d3.max(newBarData, function(d) { return d.deaths; })]);
+                yTwo.domain([0, d3.max(newBarData, function(d) { return d.gdp; })]);
 
 
                 const xAxis = g.append("g")
@@ -313,13 +320,14 @@
                 .text("GDP Per Capita");
 
                 g.selectAll(".bar")
-                .data(barChartCountries)
+                .data(newBarData)
                 .enter()
                 .append("rect")
                 .attr("class", "bar")
+                .on("mouseover", onMouseOverBar)
+                .on("mouseout", onMouseOutBar)
                 .join("rect")
                 .attr("x", function(d) {
-                    console.log(x(d.country));
                     return x(d.country);
                 })
                 .attr("width", x.bandwidth())
@@ -332,15 +340,95 @@
                 .attr("fill", "steelblue");
 
                 line = d3.line()
-                    .x(function(d) { console.log("Second: ", x(d.country)); return x(d.country) + x.bandwidth() / 2})
-                    .y(d => yTwo(d.gdp))
+                    .x(function(d) { return x(d.country) + x.bandwidth() / 2})
+                    .y( function(d) { return yTwo(d.gdp) });
 
                 g.append("path")
                 .attr("fill", "none")
                 .attr("stroke", "red")
                 .attr("stroke-miterlimit", 1)
                 .attr("stroke-width", 2)
-                .attr("d", line(barChartCountries));
+                .attr("d", line(newBarData));
+
+                g.append('g')
+                .selectAll('dot')
+                .data(newBarData)
+                .enter()
+                .append('circle')
+                .classed('gdp-point', true)
+                .attr('cx', function(d) { return x(d.country) + x.bandwidth() / 2; })
+                .attr('cy', function(d) { return yTwo(d.gdp); })
+                .attr('r', 5)
+                .on("mouseover", onMouseOverDot)
+                .on("mouseout", onMouseOutDot)
+                .style('fill', "red");
+
+
+                
+                //mouseover event handler function
+                function onMouseOverBar(d, i) {
+                    //d3.select(this).attr('class', 'highlight');
+                    d3.select(this)
+                        .transition() // adds animation
+                        .duration(400)
+                        .attr('width', x.bandwidth() + 5)
+                        .attr("y", function(d) { return y(d.deaths) - 10; })
+                        .attr("height", function(d) { return height - y(d.deaths) + 10; });
+
+                    g.append("text")
+                        .attr('class', 'val')
+                        .attr("text-anchor", "middle")
+                        .attr('x', function() {
+                            return x(i.country) + x.bandwidth() / 2;
+                        })
+                        .attr('y', function() {
+                            return y(i.deaths) - 15; 
+                        })
+                        .text( function(d) { return i.deaths; } ); // Value of the text
+                    }
+
+                //mouseout event handler function
+                function onMouseOutBar(d, i) {
+                    // use the text label class to remove label on mouseout
+                    d3.select(this).attr('class', 'bar');
+                    d3.select(this)
+                        .transition() // adds animation
+                        .duration(400)
+                        .attr('width', x.bandwidth())
+                        .attr("y", function(d) { return y(i.deaths); })
+                        .attr("height", function(d) { return height - y(i.deaths); })
+                        .style("fill", "steelblue");
+                    d3.selectAll('.val')
+                        .remove()
+                }
+
+                function onMouseOverDot(d, i) {
+
+                    g.append("text")
+                        .attr('class', 'val')
+                        .attr("text-anchor", "middle")
+                        .attr('x', function() {
+                            return x(i.country) + x.bandwidth() / 2;
+                        })
+                        .attr('y', function() {
+                            return yTwo(i.gdp) - 15; 
+                        })
+                        .text( function(d) { return "$" + i.gdp; } ); // Value of the text
+                    }
+
+                //mouseout event handler function
+                function onMouseOutDot(d, i) {
+                    // use the text label class to remove label on mouseout
+                    d3.select(this).attr('class', 'bar');
+                    d3.select(this)
+                        .transition() // adds animation
+                        .duration(400)
+                        .attr('width', x.bandwidth())
+                        .attr("y", function(d) { return y(i.deaths); })
+                        .attr("height", function(d) { return height - y(i.deaths); })
+                    d3.selectAll('.val')
+                        .remove()
+                }
                 
 
 
