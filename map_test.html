@@ -360,9 +360,9 @@
 
                         var newMonthData = monthGroup[month];
 
-                        var deathsUpdate = sumDeaths(groupByCountry(newMonthData));
+                        deaths = sumDeaths(groupByCountry(newMonthData));
 
-                        updateCircle(deathsUpdate);
+                        updateCircle(deaths);
 
                         for(i in months) {
                             if(months[i].index == val) {
@@ -539,10 +539,32 @@
                 }
 
 
-                function updateCurrentountry(newCountry) {
+                function updateCurrentCountry(newCountry) {
                     currentCountry = newCountry;
 
-                    updatePie();
+                    //console.log("New Country: ", currentCountry)
+
+                    for(i in deaths) {
+                            if(deaths[i].country == currentCountry) {
+                                var newPieData = i;
+                                break;
+                                
+                            }
+                            else {
+                                var newPieData = -1;
+                            }
+                    }
+
+                    if(newPieData > -1) {
+                        document.getElementById("errorMsg").textContent = "";
+                        updatePie(deaths[i]);
+                    }
+                    else {
+                        document.getElementById("errorMsg").textContent = "No data for " + currentCountry +
+                                                                            " for this month, please chose another.";
+                    }
+                    
+
                 }
 
 
@@ -552,7 +574,7 @@
 
                     var nonVaxed = data.population - data.vaxxed;
 
-                    //var pieData = {vaxxed: data.vaxxed, non_vaxxed: nonVaxed}
+                    //console.log("Pie country: ", data.country);
 
                     var pieData = [data.vaxxed, nonVaxed]
 
@@ -600,41 +622,49 @@
 
                 console.log("Pie Data: ", deaths[15]);
 
-                update(deaths[15]);
+                updatePie(deaths[0]);
+
+                var input = document.getElementById("countryInput");
+                input.addEventListener('click', function(e) {
+                    var choice = document.getElementById("countryChoice");
+
+                    updateCurrentCountry(choice.value);
+
+                    console.log(choice.value) 
+                });
                 
 
 
 
             });
+
         </script>
 
         <p id="value"></p>
         <div id="slider"></div>
 
-        <form action="/action_page.php">
-            <label for="country">Country:</label>
-            <select name="country" id="countryChoice">
-              <option value="Argentina">Argentina</option>
-              <option value="Brazil">Brazil</option>
-              <option value="Colombia">Colombia</option>
-              <option value="France">France</option>
-              <option value="Germany">Germany</option>
-              <option value="India">India</option>
-              <option value="Indonesia">Indonesia</option>
-              <option value="Iran">Iran</option>
-              <option value="Italy">Italy</option>
-              <option value="Mexico">Mexico</option>
-              <option value="Peru">Peru</option>
-              <option value="Poland">Poland</option>
-              <option value="Russia">Russia</option>
-              <option value="Spain">Spain</option>
-              <option value="Ukraine">Ukraine</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="United States">United States</option>
-            </select>
-            <br><br>
-            <input type="submit" value="Submit">
-          </form>
+        <label for="country">Country:</label>
+        <select name="country" id="countryChoice">
+            <option value="Argentina">Argentina</option>
+            <option value="Brazil">Brazil</option>
+            <option value="Colombia">Colombia</option>
+            <option value="France">France</option>
+            <option value="Germany">Germany</option>
+            <option value="India">India</option>
+            <option value="Indonesia">Indonesia</option>
+            <option value="Iran">Iran</option>
+            <option value="Italy">Italy</option>
+            <option value="Mexico">Mexico</option>
+            <option value="Peru">Peru</option>
+            <option value="Poland">Poland</option>
+            <option value="Russia">Russia</option>
+            <option value="Spain">Spain</option>
+            <option value="Ukraine">Ukraine</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="United States">United States</option>
+        </select>
+        <input id="countryInput" type="button" value="Submit">
+        <p id="errorMsg"></p>
         
     
     </body>
