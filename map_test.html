@@ -127,32 +127,55 @@
                 
                         const countryInd = i;
                         const country = data[countryInd];
-                        var total = 0;
+                        var totalDeaths = 0;
+                        var totalVax = 0;
                         for(d of country) {
                             const deaths = parseInt(d.new_deaths)
+                            const vax = parseInt(d.new_vaccinations_smoothed)
                             if(!isNaN(deaths)) {
-                                total += deaths;
+                                totalDeaths += deaths;
+
+                            }
+                            if(!isNaN(vax)) {
+                                totalVax += vax;
+
                             }
                         }
-                        if(total > 100 && countrySelection.includes(i)) {
+                        if(countrySelection.includes(i)) {
+                            //console.log("Country: ", country[country.length-1].people_fully_vaccinated);
                             const income = country[0].gdp_per_capita
+                            //const vaccinated = country[country.length-1].people_fully_vaccinated
+                            var vaccinated = 0;
+                            var pop = pop = +country[country.length-1].population;
+                            for(let v = 1; v < country.length; v++) {
+                                var vaxTemp = +country[country.length-v].people_fully_vaccinated
+                                if(!isNaN(vaxTemp) && vaxTemp > 0) {
+                                    vaccinated = vaxTemp;
+                                    break;
+                                }
+                            }
                             const lng = coordinates[i].long;
                             const lt = coordinates[i].lat;
                             deaths.push({country : i,
-                                        deaths: total,
+                                        deaths: totalDeaths,
+                                        vaxxed: vaccinated,
+                                        population: pop,
                                         gdp: +income,
                                         long: +lng,
                                         lat: +lt})
                         }
+                        
                     }
 
                     return deaths;
                 }
 
+                console.log("Group by all countries: ", groupByCountry(data));
+
                 // Create list of the total death rate of each country
                 var allDeaths = sumDeaths(groupByCountry(data));
 
-                console.log(allDeaths);
+                console.log("All deaths: ", allDeaths);
 
                 var newBarData = []
 
