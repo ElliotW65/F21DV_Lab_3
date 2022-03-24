@@ -18,13 +18,17 @@
             #slider {position: absolute; top: 50%; width: 50%;}
             #value {position: absolute; top: 55%; left:25%}
             #svgtwo {position: relative; left: 55%;}
+            #svgthree {position: absolute; top: 65%; left: 0%;}
         </style>
     </head>
     <body>
         <div id="map"></div>
         <svg id="svgtwo" width="800" height="800"></svg>
+        <svg id="svgthree" width="460" height="300"></svg>
+        
         <script>
 
+            var currentCountry = "Argentina";
 
 
             mapboxgl.accessToken = 'pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ';
@@ -54,12 +58,78 @@
             var width = svgTwo.attr("width") - margin;
             var height = svgTwo.attr("height") - margin;
 
+            var svgThreeWidth = 460,
+            svgThreeHeight = 300,
+            radius = Math.min(svgThreeWidth, svgThreeHeight) / 2;
+
+            var svgThree = d3.select('#svgthree')
+            .append("g")
+            .attr("transform", "translate(" + svgThreeWidth / 2 + "," + svgThreeHeight / 2 + ")");
+
 
             var x = d3.scaleBand().range([0, width]).padding(0.4);
             var y = d3.scaleLinear().range([height, 0]);
             var yTwo = d3.scaleLinear().range([height, 0]);
             var g = svgTwo.append("g")
                 .attr("transform", "translate(" + 100 + "," + 100 + ")");
+
+            var months = { "0 - 2020": {format: "Jan - 2020", index: 0}, 
+                            "1 - 2020": {format: "Feb - 2020", index: 1}, 
+                            "2 - 2020": {format: "Mar - 2020", index: 2}, 
+                            "3 - 2020": {format: "Apr - 2020", index: 3}, 
+                            "4 - 2020": {format: "May - 2020", index: 4}, 
+                            "5 - 2020": {format: "Jun - 2020", index: 5}, 
+                            "6 - 2020": {format: "Jul - 2020", index: 6}, 
+                            "7 - 2020": {format: "Aug - 2020", index: 7}, 
+                            "8 - 2020": {format: "Sep - 2020", index: 8}, 
+                            "9 - 2020": {format: "Oct - 2020", index: 9}, 
+                            "10 - 2020": {format: "Nov - 2020", index: 10}, 
+                            "11 - 2020": {format: "Dec - 2020", index: 11}, 
+                            "0 - 2021": {format: "Jan - 2021", index: 12}, 
+                            "1 - 2021": {format: "Feb - 2021", index: 13}, 
+                            "2 - 2021": {format: "Mar - 2021", index: 14}, 
+                            "3 - 2021": {format: "Apr - 2021", index: 15}, 
+                            "4 - 2021": {format: "May - 2021", index: 16}, 
+                            "5 - 2021": {format: "Jun - 2021", index: 17}, 
+                            "6 - 2021": {format: "Jul - 2021", index: 18}, 
+                            "7 - 2021": {format: "Aug - 2021", index: 19}, 
+                            "8 - 2021": {format: "Sep - 2021", index: 20}, 
+                            "9 - 2021": {format: "Oct - 2021", index: 21}, 
+                            "10 - 2021": {format: "Nov - 2021", index: 22}, 
+                            "11 - 2021": {format: "Dec - 2021", index: 23}, 
+                            "0 - 2022": {format: "Jan - 2021", index: 24}, 
+                            "1 - 2022": {format: "Feb - 2022", index: 25}, 
+                            "2 - 2022": {format: "Mar - 2022", index: 26}
+                        }
+
+            var monthObj = {"Jan - 2020": [],
+                            "Feb - 2020": [],
+                            "Mar - 2020": [],
+                            "Apr - 2020": [],
+                            "May - 2020": [],
+                            "Jun - 2020": [],
+                            "Jul - 2020": [],
+                            "Aug - 2020": [],
+                            "Sep - 2020": [],
+                            "Oct - 2020": [],
+                            "Nov - 2020": [],
+                            "Dec - 2020": [],
+                            "Jan - 2021": [],
+                            "Feb - 2021": [],
+                            "Mar - 2021": [],
+                            "Apr - 2021": [],
+                            "May - 2021": [],
+                            "Jun - 2021": [],
+                            "Jul - 2021": [],
+                            "Aug - 2021": [],
+                            "Sep - 2021": [],
+                            "Oct - 2021": [],
+                            "Nov - 2021": [],
+                            "Dec - 2021": [],
+                            "Jan - 2021": [],
+                            "Feb - 2022": [],
+                            "Mar - 2022": []
+                        }
 
             
 
@@ -73,22 +143,26 @@
 
                 for(i in data) {
                     var date = new Date(data[i].date)
-                    var key = date.getUTCMonth() + " - " + date.getUTCFullYear()
+                    var keyTemp = date.getUTCMonth() + " - " + date.getUTCFullYear()
+                    var key = months[keyTemp];
                     if(!isNaN(date)) {
-                        monthGroup[key] = [];
+                        monthGroup[key.index] = [];
                         monthDates[key] = new Date(date.getUTCFullYear(), date.getUTCMonth());
                     }
                 }
 
                 for(i in data) {
                     var date = new Date(data[i].date)
-                    var key = date.getUTCMonth() + " - " + date.getUTCFullYear()
+                    var keyTemp = date.getUTCMonth() + " - " + date.getUTCFullYear()
+                    var key = months[keyTemp];
                     if(!isNaN(date)) {
-                        monthGroup[key].push(data[i]);
+                        monthGroup[key.index].push(data[i]);
                     }
                     
 
                 }
+
+                console.log(monthGroup);
 
 
 
@@ -101,7 +175,7 @@
                                             "Iran", "Argentina", "Germany", "Ukraine", "Poland", "Spain"]
 
 
-                var month = monthGroup["6 - 2020"]
+                var month = monthGroup[0]
 
                 function groupByCountry(data) {
                     const newGroups = data.reduce((groups, item) => {
@@ -200,6 +274,8 @@
 
                 const monthTest = groupByCountry(month);
 
+                console.log("Group by month: ", monthTest);
+
                 var deaths = sumDeaths(groupByCountry(month));
 
                 console.log("Deaths: ", deaths);
@@ -253,7 +329,7 @@
                             return project(longLat).y;
                         })
                         .attr("r", function(d) {
-                            return d.deaths / 1000;
+                            return d.deaths / 500;
                         })
                         .attr("fill", function(d) {
                             return newColor(d.deaths);
@@ -271,35 +347,6 @@
 
                 var sliderWidth = sliderBox.offsetWidth;
 
-                var months = { "1 - 2020": "Feb - 2020",
-                                "2 - 2020": "Mar - 2020",
-                                "3 - 2020": "Apr - 2020",
-                                "4 - 2020": "May - 2020",
-                                "5 - 2020": "Jun - 2020",
-                                "6 - 2020": "Jul - 2020",
-                                "7 - 2020": "Aug - 2020",
-                                "8 - 2020": "Sep - 2020",
-                                "9 - 2020": "Oct - 2020",
-                                "10 - 2020": "Nov - 2020",
-                                "11 - 2020": "Dec - 2020",
-                                "0 - 2021": "Jan - 2021",
-                                "1 - 2021": "Feb - 2021",
-                                "2 - 2021": "Mar - 2021",
-                                "3 - 2021": "Apr - 2021",
-                                "4 - 2021": "May - 2021",
-                                "5 - 2021": "Jun - 2021",
-                                "6 - 2021": "Jul - 2021",
-                                "7 - 2021": "Aug - 2021",
-                                "8 - 2021": "Sep - 2021",
-                                "9 - 2021": "Oct - 2021",
-                                "10 - 2021": "Nov - 2021",
-                                "11 - 2021": "Dec - 2021",
-                                "0 - 2022": "Jan - 2021",
-                                "1 - 2022": "Feb - 2022",
-                                "2 - 2022": "Mar - 2022",
-                                "0 - 2020": "Jan - 2020",
-                            }
-
 
                 var slider = d3
                     .sliderBottom()
@@ -311,9 +358,15 @@
                     .on('onchange', (val) => {
                         const month = dateTicks[val];
 
+                        console.log("On change: ", month);
+
                         var newMonthData = monthGroup[month];
 
+
                         var deathsUpdate = sumDeaths(groupByCountry(newMonthData));
+
+                        console.log(deathsUpdate);
+
 
                         updateCircle(deathsUpdate);
 
@@ -486,6 +539,70 @@
                     d3.selectAll('.val')
                         .remove()
                 }
+
+
+                function updateCurrentountry(newCountry) {
+                    currentCountry = newCountry;
+
+                    updatePie();
+                }
+
+
+                var pieColor = d3.scaleOrdinal().range(d3.schemeSet3);
+
+                function updatePie(data) {
+
+                    var nonVaxed = data.population - data.vaxxed;
+
+                    //var pieData = {vaxxed: data.vaxxed, non_vaxxed: nonVaxed}
+
+                    var pieData = [data.vaxxed, nonVaxed]
+
+                    var pie = d3.pie()
+                        .sort(null);
+
+                    var arc = d3.arc()
+                        .innerRadius(radius - 100)
+                        .outerRadius(radius - 50);
+
+
+
+                    var path = svgThree.selectAll("path")
+                    .data(pie(pieData))
+
+                    console.log(pie(pieData));
+
+                    var enterPath = path.enter().append("path")
+                        .transition()
+                        .duration(500)
+                        .attr("fill", function(d, i) { console.log(i); return pieColor(i); })
+                        .attr("d", arc)
+                        .attrTween("d", function (d) {
+                            var i = d3.interpolate(d.endAngle, d.startAngle);
+                            return function (t) {
+                            d.startAngle = i(t);
+                            return arc(d);
+                        }
+                        });
+
+                    var updatePath = path.attr("d", arc)
+                        .transition()
+                        .duration(1000)
+                        .attrTween("d", tweenFunction)
+
+                        
+                    function tweenFunction(newAngle) {
+                        var inter = d3.interpolate(this.currentAngle, newAngle);
+                        this.currentAngle = inter(0);
+                        return function(t) {
+                            return arc(inter(t)); 
+                        };
+                    }
+                };
+
+                console.log("Pie Data: ", deaths[15]);
+
+                update(deaths[15]);
                 
 
 
@@ -495,6 +612,32 @@
 
         <p id="value"></p>
         <div id="slider"></div>
+
+        <form action="/action_page.php">
+            <label for="country">Country:</label>
+            <select name="country" id="countryChoice">
+              <option value="Argentina">Argentina</option>
+              <option value="Brazil">Brazil</option>
+              <option value="Colombia">Colombia</option>
+              <option value="France">France</option>
+              <option value="Germany">Germany</option>
+              <option value="India">India</option>
+              <option value="Indonesia">Indonesia</option>
+              <option value="Iran">Iran</option>
+              <option value="Italy">Italy</option>
+              <option value="Mexico">Mexico</option>
+              <option value="Peru">Peru</option>
+              <option value="Poland">Poland</option>
+              <option value="Russia">Russia</option>
+              <option value="Spain">Spain</option>
+              <option value="Ukraine">Ukraine</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="United States">United States</option>
+            </select>
+            <br><br>
+            <input type="submit" value="Submit">
+          </form>
+        
     
     </body>
 </html>
