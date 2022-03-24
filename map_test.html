@@ -358,21 +358,19 @@
                     .on('onchange', (val) => {
                         const month = dateTicks[val];
 
-                        console.log("On change: ", month);
-
                         var newMonthData = monthGroup[month];
-
 
                         var deathsUpdate = sumDeaths(groupByCountry(newMonthData));
 
-                        console.log(deathsUpdate);
-
-
                         updateCircle(deathsUpdate);
 
-                        var monthFormat = months[month];
+                        for(i in months) {
+                            if(months[i].index == val) {
+                                var displayMonth = months[i].format;
+                            }
+                        }
 
-                        d3.select('#value').text(monthFormat);
+                        d3.select('#value').text(displayMonth);
                     });
 
                 d3.select('#slider')
