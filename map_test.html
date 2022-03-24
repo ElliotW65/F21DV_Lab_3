@@ -17,10 +17,12 @@
             #map { position: absolute; top: 0; bottom: 0; height: 50%; width: 50%; }
             #slider {position: absolute; top: 50%; width: 50%;}
             #value {position: absolute; top: 55%;}
+            #svgtwo {position: relative; left: 55%;}
         </style>
     </head>
     <body>
         <div id="map"></div>
+        <svg id="svgtwo" width="600" height="500"></svg>
         <script>
 
 
@@ -46,6 +48,17 @@
             .attr("height", "100%")
             .style("position", "absolute")
             .style("z-index", 2);
+
+            var svgTwo = d3.select('#svgtwo');
+            var margin = 200;
+            var width = svgTwo.attr("width") - margin;
+            var height = svgTwo.attr("height") - margin;
+
+
+            var x = d3.scaleBand().range([0, width]).padding(0.4);
+            var y = d3.scaleLinear().range([height, 0]);
+            var g = svgTwo.append("g")
+                .attr("transform", "translate(" + 100 + "," + 100 + ")");
 
             
 
@@ -78,7 +91,7 @@
 
                 const nonCountries = ["Europe", "European Union", "High income", "Lower mideel income", 
                                         "North America", "South America", "Africa", "Upper middle income",
-                                        "World", "Asia", "Lower middle income", "Oceania"]
+                                        "World", "Asia", "Lower middle income", "Oceania", "Low income"]
 
 
                 var month = monthGroup["6 - 2020"]
@@ -95,7 +108,7 @@
                 }
 
                 
-
+                console.log(data);
 
                 var deaths = [];
 
@@ -115,14 +128,11 @@
                             }
                         }
                         if(total > 100 && !nonCountries.includes(i)) {
-                            //console.log("i: ", i);
-                            //console.log(nonCountries.includes("Asia"));
                             const income = country[0].gdp_per_capita
                             deaths.push({country : i,
                                         deaths: total,
                                         gdp: +income})
                         }
-                        //break;
                     }
 
                     return deaths;
@@ -132,12 +142,22 @@
                 var allDeaths = sumDeaths(groupByCountry(data));
 
                 var sortedDeaths = allDeaths.sort(function(a, b) {
-                    return b.deaths - a.deaths;
+                    return b.gdp - a.gdp;
                 });
 
                 console.log(sortedDeaths);
 
-                let totalDeathsAndIncome = sortedDeaths.map((item, i) => Object.assign({}, item, coordinates[i]));
+                var barChartCountries = sortedDeaths.slice(0,5);
+
+                console.log(barChartCountries);
+
+                var tempArr = sortedDeaths.slice(164, 169);
+
+                for(i in tempArr) {
+                    barChartCountries.push(tempArr[i]);
+                }
+
+                console.log(barChartCountries);
 
                 const monthTest = groupByCountry(month);
 
@@ -248,6 +268,50 @@
                     .append('g')
                     .attr('transform', 'translate(30,30)')
                     .call(slider);
+
+                // Bar/Line Chart
+                x.domain( barChartCountries.map(function(d) { return d.country; }) );
+                y.domain([0, d3.max(barChartCountries, function(d) { return d.deaths; })]);
+
+                const xAxis = g.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+                    .selectAll("text")
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.8em")
+                    .attr("dy", ".15em")
+                    .attr("transform", "rotate(-65)");
+
+                xAxis.append("text")
+                .attr("y", height - 250)
+                .attr("x", width - 100)
+                .attr("text-anchor", "end")
+                .attr("stroke", "black")
+                .text("Year");
+
+/*                 xAxis.selectAll(".tick text")
+                .attr("transform", "rotate(-65)") */
+                
+
+                g.append("g")
+                .call(d3.axisLeft(y).tickFormat(function(d){
+                    return "$" + d;
+                }).ticks(10))
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", "-5.1em")
+                .attr("text-anchor", "end")
+                .attr("stroke", "black")
+                .text("Stock Price");
+
+                g.selectAll(".bar")
+                .data(barChartCountries)
+                .enter().append("rect")
+                .attr("class", "bar")
+
+
+                
 
 
 
