@@ -22,7 +22,7 @@
     </head>
     <body>
         <div id="map"></div>
-        <svg id="svgtwo" width="600" height="500"></svg>
+        <svg id="svgtwo" width="800" height="800"></svg>
         <script>
 
 
@@ -50,7 +50,7 @@
             .style("z-index", 2);
 
             var svgTwo = d3.select('#svgtwo');
-            var margin = 200;
+            var margin = 280;
             var width = svgTwo.attr("width") - margin;
             var height = svgTwo.attr("height") - margin;
 
@@ -288,15 +288,10 @@
                 .attr("text-anchor", "end")
                 .attr("stroke", "black")
                 .text("Year");
-
-/*                 xAxis.selectAll(".tick text")
-                .attr("transform", "rotate(-65)") */
                 
 
                 g.append("g")
-                .call(d3.axisLeft(y).tickFormat(function(d){
-                    return "$" + d;
-                }).ticks(10))
+                .call(d3.axisLeft(y).ticks(9))
                 .append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("y", 6)
@@ -307,8 +302,22 @@
 
                 g.selectAll(".bar")
                 .data(barChartCountries)
-                .enter().append("rect")
+                .enter()
+                .append("rect")
                 .attr("class", "bar")
+                .join("rect")
+                .attr("x", function(d) {
+                    console.log(d.country);
+                    return x(d.country);
+                })
+                .attr("width", x.bandwidth())
+                .attr("y", function(d) {
+                    return y(d.deaths); 
+                })
+                .attr("height", function(d) {
+                    return height - y(d.deaths); 
+                })
+                .attr("fill", "steelblue");
 
 
                 
