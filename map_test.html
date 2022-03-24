@@ -57,6 +57,7 @@
 
             var x = d3.scaleBand().range([0, width]).padding(0.4);
             var y = d3.scaleLinear().range([height, 0]);
+            var yTwo = d3.scaleLinear().range([height, 0]);
             var g = svgTwo.append("g")
                 .attr("transform", "translate(" + 100 + "," + 100 + ")");
 
@@ -234,8 +235,6 @@
 
                 var sliderWidth = sliderBox.offsetWidth;
 
-                console.log(sliderWidth);
-
                 var slider = d3
                     .sliderBottom()
                     .min(0)
@@ -272,6 +271,8 @@
                 // Bar/Line Chart
                 x.domain( barChartCountries.map(function(d) { return d.country; }) );
                 y.domain([0, d3.max(barChartCountries, function(d) { return d.deaths; })]);
+                yTwo.domain([0, d3.max(barChartCountries, function(d) { return d.gdp; })]);
+
 
                 const xAxis = g.append("g")
                 .attr("transform", "translate(0," + height + ")")
@@ -291,14 +292,25 @@
                 
 
                 g.append("g")
-                .call(d3.axisLeft(y).ticks(9))
+                .call(d3.axisLeft(y).ticks(10))
                 .append("text")
                 .attr("transform", "rotate(-90)")
                 .attr("y", 6)
                 .attr("dy", "-5.1em")
                 .attr("text-anchor", "end")
                 .attr("stroke", "black")
-                .text("Stock Price");
+                .text("Total Deaths");
+
+                g.append("g")
+                .attr("transform", "translate(" + width +" 0 )")
+                .call(d3.axisRight(yTwo).ticks(11))
+                .append("text")
+                .attr("transform", "rotate(90)")
+                .attr("y", 6)
+                .attr("dy", "-5.1em")
+                .attr("text-anchor", "end")
+                .attr("stroke", "black")
+                .text("GDP Per Capita");
 
                 g.selectAll(".bar")
                 .data(barChartCountries)
@@ -307,7 +319,7 @@
                 .attr("class", "bar")
                 .join("rect")
                 .attr("x", function(d) {
-                    console.log(d.country);
+                    console.log(x(d.country));
                     return x(d.country);
                 })
                 .attr("width", x.bandwidth())
@@ -319,7 +331,16 @@
                 })
                 .attr("fill", "steelblue");
 
+                line = d3.line()
+                    .x(function(d) { console.log("Second: ", x(d.country)); return x(d.country) + x.bandwidth() / 2})
+                    .y(d => yTwo(d.gdp))
 
+                g.append("path")
+                .attr("fill", "none")
+                .attr("stroke", "red")
+                .attr("stroke-miterlimit", 1)
+                .attr("stroke-width", 2)
+                .attr("d", line(barChartCountries));
                 
 
 
