@@ -71,7 +71,8 @@
             var y = d3.scaleLinear().range([height, 0]);
             var yTwo = d3.scaleLinear().range([height, 0]);
             var g = svgTwo.append("g")
-                .attr("transform", "translate(" + 100 + "," + 100 + ")");
+                .attr("transform", "translate(" + 100 + "," + 100 + ")")
+                .classed("pieG", true);
 
             var months = { "0 - 2020": {format: "Jan - 2020", index: 0}, 
                             "1 - 2020": {format: "Feb - 2020", index: 1}, 
@@ -598,7 +599,7 @@
 
                     console.log(pie(pieData));
 
-                    var enterPath = path.enter().append("path")
+                    var enterPath = path.enter().append('g').classed("arcG", true).append("path")
                         .transition()
                         .duration(500)
                         .attr("fill", function(d, i) { console.log(i); return pieColor(i); })
@@ -624,6 +625,17 @@
                             return arc(inter(t)); 
                         };
                     }
+
+                    var label = d3.arc()
+                      .outerRadius(radius)
+                      .innerRadius(0);
+
+                    g.selectAll("g")
+                    .data(pie(data))
+                    .enter()
+                    .append("text")
+                    .attr("transform", function(d, i) { return "translate(" + arc.centroid(d, i) + ")"; })
+                    .text(function(d) {return d.type});
                 };
 
                 console.log("Pie Data: ", deaths[15]);
