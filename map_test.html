@@ -78,7 +78,7 @@
 
                 const nonCountries = ["Europe", "European Union", "High income", "Lower mideel income", 
                                         "North America", "South America", "Africa", "Upper middle income",
-                                        "World"]
+                                        "World", "Asia", "Lower middle income", "Oceania"]
 
 
                 var month = monthGroup["6 - 2020"]
@@ -115,11 +115,14 @@
                             }
                         }
                         if(total > 100 && !nonCountries.includes(i)) {
+                            //console.log("i: ", i);
+                            //console.log(nonCountries.includes("Asia"));
                             const income = country[0].gdp_per_capita
                             deaths.push({country : i,
                                         deaths: total,
                                         gdp: +income})
                         }
+                        //break;
                     }
 
                     return deaths;
@@ -137,8 +140,6 @@
                 let totalDeathsAndIncome = sortedDeaths.map((item, i) => Object.assign({}, item, coordinates[i]));
 
                 const monthTest = groupByCountry(month);
-
-                console.log(month);
 
                 var deaths = sumDeaths(groupByCountry(month));
 
