@@ -364,6 +364,8 @@
 
                         updateCircle(deaths);
 
+                        updateCurrentCountry(currentCountry);
+
                         for(i in months) {
                             if(months[i].index == val) {
                                 var displayMonth = months[i].format;
@@ -578,8 +580,12 @@
 
                     var pieData = [data.vaxxed, nonVaxed]
 
-                    var pie = d3.pie()
-                        .sort(null);
+                    var pieData = [{type: "Vaxinated", count: data.vaxxed},
+                                    {type: "Unvaxinated", count: nonVaxed}]
+
+                    var pie = d3.pie().value(function(d) {
+                            return d.count; 
+                        });
 
                     var arc = d3.arc()
                         .innerRadius(radius - 100)
