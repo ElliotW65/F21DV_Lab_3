@@ -135,11 +135,7 @@
 
             d3.csv('owid-covid-data.csv').then( function(data) {
 
-                console.log(coordinates);
-
                 const monthGroup = {}
-
-                const monthDates = {}
 
                 // For loop to create a key value pair in the monthGroup object
                 // for each month in the data where the value is an empty array.
@@ -149,7 +145,6 @@
                     var key = months[keyTemp];
                     if(!isNaN(date)) {
                         monthGroup[key.index] = [];
-                        monthDates[key] = new Date(date.getUTCFullYear(), date.getUTCMonth());
                     }
                 }
 
@@ -163,14 +158,6 @@
                         monthGroup[key.index].push(data[i]);
                     }
                 }
-
-                console.log("Month group: ", monthGroup);
-
-
-
-                const nonCountries = ["Europe", "European Union", "High income", "Lower mideel income", 
-                                        "North America", "South America", "Africa", "Upper middle income",
-                                        "World", "Asia", "Lower middle income", "Oceania", "Low income"]
 
                 const countrySelection = ["United States", "Brazil", "India", "Russia", "Mexico", "Peru",
                                             "United Kingdom", "Italy", "Indonesia", "Colombia", "France",
@@ -192,10 +179,6 @@
                     return newGroups;
                 }
 
-                
-                console.log(data);
-
-                var deaths = [];
 
                 // Function to created the data objects used in the data visualisation
                 function sumDeaths(data) {
