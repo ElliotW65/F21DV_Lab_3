@@ -512,16 +512,13 @@
 
                 }
 
-
+                // Set colour scheme of pie chart
                 var pieColor = d3.scaleOrdinal().range(d3.schemeSet3);
 
+                // Function to update the pie chart
                 function updatePie(data) {
 
-                    var nonVaxed = data.population - data.vaxxed;
-
-                    //console.log("Pie country: ", data.country);
-
-                    var pieData = [data.vaxxed, nonVaxed]
+                    var nonVaxed = data.population - data.vaxxed; // Determine number of not vaccinated people
 
                     var pieData = [{type: "Vaxinated", count: data.vaxxed},
                                     {type: "Unvaxinated", count: nonVaxed}]
@@ -533,8 +530,6 @@
                     var arc = d3.arc()
                         .innerRadius(radius - 100)
                         .outerRadius(radius - 50);
-
-
 
                     var path = svgThree.selectAll("path")
                     .data(pie(pieData))
@@ -559,7 +554,7 @@
                         .duration(1000)
                         .attrTween("d", tweenFunction)
 
-                        
+                    // Function to smoothly update the segments of the pie chart when new data is used 
                     function tweenFunction(newAngle) {
                         var inter = d3.interpolate(this.currentAngle, newAngle);
                         this.currentAngle = inter(0);
@@ -567,27 +562,17 @@
                             return arc(inter(t)); 
                         };
                     }
-
-                    var label = d3.arc()
-                      .outerRadius(radius)
-                      .innerRadius(0);
-
-                    g.selectAll("g")
-                    .data(pie(data))
-                    .enter()
-                    .append("text")
-                    .attr("transform", function(d, i) { return "translate(" + arc.centroid(d, i) + ")"; })
-                    .text(function(d) {return d.type});
                 };
 
-                console.log("Pie Data: ", deaths[15]);
-
+                // Initialise the pie chart with data from Argentina for the first month
                 updatePie(deaths[0]);
 
+                // Event listener and handler for when a user clicks the submit button
+                // after choosing a new country from the dropdown menu.
                 var input = document.getElementById("countryInput");
                 input.addEventListener('click', function(e) {
                     var choice = document.getElementById("countryChoice");
-
+                    
                     updateCurrentCountry(choice.value);
                 });
                 
