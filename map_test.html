@@ -180,7 +180,7 @@
                 }
 
 
-                // Function to created the data objects used in the data visualisation
+                // Function to creat the data objects used in the data visualisation
                 function sumDeaths(data) {
 
                     const deaths = [];
@@ -230,43 +230,31 @@
                     return deaths;
                 }
 
-                console.log("Group by all countries: ", groupByCountry(data));
-
                 // Create list of the total death rate of each country
                 var allDeaths = sumDeaths(groupByCountry(data));
 
-                console.log("All deaths: ", allDeaths);
-
+                // Array to contain data used in the bar chart
                 var newBarData = []
 
+                // Loop through all countries, if total deaths is above 100,000
+                // push to newBarData.
+                // All data in the dashboard is based on countries with total deaths
+                // of over 100,000 for data reduction.
                 for(i in allDeaths) {
                     if(allDeaths[i].deaths >= 100000) {
                         newBarData.push(allDeaths[i]);
                     }
                 }
 
-
-
+                // Sort bar chart data by highest number of deaths to lowest
                 newBarData.sort(function(a, b) {
                     return b.deaths - a.deaths;
                 })
 
-                console.log(newBarData);
-
-
-                var barChartCountriesSorted = allDeaths.sort(function(a, b) {
-                    return a.deaths - b.deaths;
-                });
-
-                const monthTest = groupByCountry(month);
-
-                console.log("Group by month: ", monthTest);
-
+                // Create initial month population data using Jan 2020
                 var deaths = sumDeaths(groupByCountry(month));
 
-                console.log("Deaths: ", deaths);
-
-                let arr3 = deaths.map((item, i) => Object.assign({}, item, coordinates[i]));
+                //let arr3 = deaths.map((item, i) => Object.assign({}, item, coordinates[i]));
 
                 var color = d3.scaleSequential().domain([0,d3.max(deaths, function(d) { return +d.deaths})]).range(["white", "red"]);
 
@@ -276,7 +264,7 @@
 
                 var circles = svg
                 .selectAll("circle")
-                .data(arr3)
+                .data(deaths)
                 .enter()
                 .append("circle")
                 .attr("r", function(d) {
