@@ -205,37 +205,41 @@
                     for(i in data) {
                 
                         const countryInd = i;
+                        // If the country is one in focus, pass if not
                         if(countrySelection.includes(i)) {
-                        const country = data[countryInd];
-                        var totalDeaths = 0;
-                        var totalVax = 0;
-                        for(d of country) {
-                            const deaths = parseInt(d.new_deaths)
-                            if(!isNaN(deaths)) {
-                                totalDeaths += deaths;
 
+                            const country = data[countryInd];
+                            var totalDeaths = 0;
+                            var totalVax = 0;
+                            // Loop through country array and total deaths
+                            for(d of country) {
+                                const deaths = parseInt(d.new_deaths)
+                                if(!isNaN(deaths)) {
+                                    totalDeaths += deaths;
+
+                                }
                             }
-                        }
-                        
-                        const income = country[0].gdp_per_capita
-                        var vaccinated = 0;
-                        var pop = pop = +country[country.length-1].population;
-                        for(let v = 1; v < country.length; v++) {
-                            var vaxTemp = +country[country.length-v].people_fully_vaccinated
-                            if(!isNaN(vaxTemp) && vaxTemp > 0) {
-                                vaccinated = vaxTemp;
-                                break;
+                            
+                            const income = country[0].gdp_per_capita
+                            var vaccinated = 0;
+                            var pop = pop = +country[country.length-1].population;
+                            // Loop back through the array to get the most recent vax figure
+                            for(let v = 1; v < country.length; v++) {
+                                var vaxTemp = +country[country.length-v].people_fully_vaccinated
+                                if(!isNaN(vaxTemp) && vaxTemp > 0) {
+                                    vaccinated = vaxTemp;
+                                    break;
+                                }
                             }
-                        }
-                        const lng = coordinates[i].long;
-                        const lt = coordinates[i].lat;
-                        deaths.push({country : i,
-                                    deaths: totalDeaths,
-                                    vaxxed: vaccinated,
-                                    population: pop,
-                                    gdp: +income,
-                                    long: +lng,
-                                    lat: +lt})
+                            const lng = coordinates[i].long;
+                            const lt = coordinates[i].lat;
+                            deaths.push({country : i,
+                                        deaths: totalDeaths,
+                                        vaxxed: vaccinated,
+                                        population: pop,
+                                        gdp: +income,
+                                        long: +lng,
+                                        lat: +lt})
                         }
                         
                     }
