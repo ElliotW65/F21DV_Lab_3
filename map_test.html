@@ -32,10 +32,10 @@
 
             mapboxgl.accessToken = 'pk.eyJ1IjoiZWxsaW90dzY1IiwiYSI6ImNrbGk0amV4MTA5bHUycW5tN2JzM3J0bTIifQ.OGT4ltSNZ7vyd_yEUg8afQ';
             const map = new mapboxgl.Map({
-            container: 'map', // container ID
-            style: 'mapbox://styles/mapbox/streets-v11', // style URL
-            center: [-3, 54], // starting position [lng, lat]
-            zoom: 1 // starting zoom
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [-3, 54],
+            zoom: 1
             });
 
             function project(data) {
@@ -101,37 +101,6 @@
                             "1 - 2022": {format: "Feb - 2022", index: 25}, 
                             "2 - 2022": {format: "Mar - 2022", index: 26}
                         }
-
-            var monthObj = {"Jan - 2020": [],
-                            "Feb - 2020": [],
-                            "Mar - 2020": [],
-                            "Apr - 2020": [],
-                            "May - 2020": [],
-                            "Jun - 2020": [],
-                            "Jul - 2020": [],
-                            "Aug - 2020": [],
-                            "Sep - 2020": [],
-                            "Oct - 2020": [],
-                            "Nov - 2020": [],
-                            "Dec - 2020": [],
-                            "Jan - 2021": [],
-                            "Feb - 2021": [],
-                            "Mar - 2021": [],
-                            "Apr - 2021": [],
-                            "May - 2021": [],
-                            "Jun - 2021": [],
-                            "Jul - 2021": [],
-                            "Aug - 2021": [],
-                            "Sep - 2021": [],
-                            "Oct - 2021": [],
-                            "Nov - 2021": [],
-                            "Dec - 2021": [],
-                            "Jan - 2021": [],
-                            "Feb - 2022": [],
-                            "Mar - 2022": []
-                        }
-
-            
 
             d3.csv('owid-covid-data.csv').then( function(data) {
 
@@ -254,14 +223,12 @@
                 // Create initial month population data using Jan 2020
                 var deaths = sumDeaths(groupByCountry(month));
 
-                //let arr3 = deaths.map((item, i) => Object.assign({}, item, coordinates[i]));
-
                 var color = d3.scaleSequential().domain([0,d3.max(deaths, function(d) { return +d.deaths})]).range(["white", "red"]);
 
-                console.log("Keys: ", Object.keys(monthGroup));
-
+                // Create dat ticks for the slider using monthGroup keys
                 var dateTicks = Object.keys(monthGroup);
 
+                // Create circles and append to map
                 var circles = svg
                 .selectAll("circle")
                 .data(deaths)
@@ -278,7 +245,7 @@
                     circles
                     .attr("cx", function (d) {
                         var longLat = [+d.long, +d.lat];
-                        return project(longLat).x;
+                        return project(longLat).x; // Project used to map real coordinates to map coordinates
                     })
                     .attr("cy", function (d) {
                         var longLat = [+d.long, +d.lat];
@@ -286,6 +253,7 @@
                     });
                 }
 
+                // Function to update the circle data
                 function updateCircle(data) {
 
                     var newColor = d3.scaleSequential().domain([0,d3.max(data, function(d) { return +d.deaths})]).range(["white", "red"]);
@@ -296,7 +264,7 @@
                         .duration(500)
                         .attr("cx", function (d) {
                         var longLat = [+d.long, +d.lat];
-                            return project(longLat).x;
+                            return project(longLat).x; // Project used to map real coordinates to map coordinates
                         })
                         .attr("cy", function (d) {
                             var longLat = [+d.long, +d.lat];
@@ -312,16 +280,17 @@
                     render();
                 };
 
+                // Re-render the circles when the user scrolls and/or zooms
                 map.on("viewreset", render);
                 map.on("move", render);
                 map.on("moveend", render);
-                render(); // Call once to render
+                render(); // Render initially
 
                 var sliderBox = document.querySelector("#slider")
 
                 var sliderWidth = sliderBox.offsetWidth;
 
-
+                // Create a slider using the d3-simple-slider library
                 var slider = d3
                     .sliderBottom()
                     .min(0)
@@ -329,23 +298,25 @@
                     .step(1)
                     .width(sliderWidth -120)
                     .displayValue(false)
-                    .on('onchange', (val) => {
+                    .on('onchange', function(val) {
                         const month = dateTicks[val];
 
-                        var newMonthData = monthGroup[month];
+                        var newMonthData = monthGroup[month]; // Get data for new month from the month grouping
 
-                        deaths = sumDeaths(groupByCountry(newMonthData));
+                        deaths = sumDeaths(groupByCountry(newMonthData)); // Group by country and create data objects
 
-                        updateCircle(deaths);
+                        updateCircle(deaths); // Re-render circles on the map
 
-                        updateCurrentCountry(currentCountry);
+                        updateCurrentCountry(currentCountry); // Update the pie chart
 
+                        // Get the human readable format of the new month
                         for(i in months) {
                             if(months[i].index == val) {
                                 var displayMonth = months[i].format;
                             }
                         }
 
+                        // Update text under the slider to show new month
                         d3.select('#value').text(displayMonth);
                     });
 
