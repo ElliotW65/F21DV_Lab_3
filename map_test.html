@@ -8,7 +8,6 @@
         <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
         <script src='https://d3js.org/d3.v7.min.js'></script>
         <script src="https://unpkg.com/d3-simple-slider"></script>
-        <script src="/require.js"></script>
         <script type="text/javascript" src="newCoords.js"></script>
 
         <style>
@@ -38,11 +37,12 @@
             zoom: 1
             });
 
+            // Function to map real world coordinates to their position on the map
             function project(data) {
                 return map.project(new mapboxgl.LngLat(data[0], data[1]));
             }
 
-
+            // Set the size and position of the svg on top of the map
             var container = map.getCanvasContainer();
             var svg = d3
             .select(container)
@@ -50,13 +50,15 @@
             .attr("width", "100%")
             .attr("height", "100%")
             .style("position", "absolute")
-            .style("z-index", 2);
+            .style("z-index", 2); // Ensure svg is on top of the map so it is visible
 
+            // Initialise variables for the svg for the bar/line chart
             var svgTwo = d3.select('#svgtwo');
             var margin = 280;
             var width = svgTwo.attr("width") - margin;
             var height = svgTwo.attr("height") - margin;
 
+            // Initialise variables for the svg for the pie chart
             var svgThreeWidth = 460,
             svgThreeHeight = 300,
             radius = Math.min(svgThreeWidth, svgThreeHeight) / 2;
@@ -73,6 +75,7 @@
                 .attr("transform", "translate(" + 100 + "," + 100 + ")")
                 .classed("pieG", true);
 
+            // Create mapping data object for months data formatting and ordering
             var months = { "0 - 2020": {format: "Jan - 2020", index: 0}, 
                             "1 - 2020": {format: "Feb - 2020", index: 1}, 
                             "2 - 2020": {format: "Mar - 2020", index: 2}, 
@@ -102,6 +105,7 @@
                             "2 - 2022": {format: "Mar - 2022", index: 26}
                         }
 
+            // Function to read in the data and create the dashboard
             d3.csv('owid-covid-data.csv').then( function(data) {
 
                 const monthGroup = {}
@@ -572,7 +576,7 @@
                 var input = document.getElementById("countryInput");
                 input.addEventListener('click', function(e) {
                     var choice = document.getElementById("countryChoice");
-                    
+
                     updateCurrentCountry(choice.value);
                 });
                 
