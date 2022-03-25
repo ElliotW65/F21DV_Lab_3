@@ -422,7 +422,6 @@
                 
                 //mouseover event handler function
                 function onMouseOverBar(d, i) {
-                    //d3.select(this).attr('class', 'highlight');
                     d3.select(this)
                         .transition() // adds animation
                         .duration(400)
@@ -485,12 +484,11 @@
                         .remove()
                 }
 
-
+                // Function to select new country data and call the updating of the pie chart.
                 function updateCurrentCountry(newCountry) {
                     currentCountry = newCountry;
-
-                    //console.log("New Country: ", currentCountry)
-
+                    
+                    // Looop through the current months deaths dataset and select data from the new country
                     for(i in deaths) {
                             if(deaths[i].country == currentCountry) {
                                 var newPieData = i;
@@ -501,7 +499,7 @@
                                 var newPieData = -1;
                             }
                     }
-
+                    // If data is found, update the pie chart, else show user an error message
                     if(newPieData > -1) {
                         document.getElementById("errorMsg").textContent = "";
                         updatePie(deaths[i]);
@@ -591,8 +589,6 @@
                     var choice = document.getElementById("countryChoice");
 
                     updateCurrentCountry(choice.value);
-
-                    console.log(choice.value) 
                 });
                 
 
