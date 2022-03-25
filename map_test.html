@@ -7,7 +7,6 @@
         <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
         <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
         <script src='https://d3js.org/d3.v7.min.js'></script>
-        <script src="https://d3js.org/d3.v6.js"></script>
         <script src="https://unpkg.com/d3-simple-slider"></script>
         <script src="/require.js"></script>
         <script type="text/javascript" src="newCoords.js"></script>
@@ -142,6 +141,8 @@
 
                 const monthDates = {}
 
+                // For loop to create a key value pair in the monthGroup object
+                // for each month in the data where the value is an empty array.
                 for(i in data) {
                     var date = new Date(data[i].date)
                     var keyTemp = date.getUTCMonth() + " - " + date.getUTCFullYear()
@@ -152,6 +153,8 @@
                     }
                 }
 
+                // For loop to populate the empty arrays in monthGroup with the
+                // data objects from the corresponding month
                 for(i in data) {
                     var date = new Date(data[i].date)
                     var keyTemp = date.getUTCMonth() + " - " + date.getUTCFullYear()
@@ -159,11 +162,9 @@
                     if(!isNaN(date)) {
                         monthGroup[key.index].push(data[i]);
                     }
-                    
-
                 }
 
-                console.log(monthGroup);
+                console.log("Month group: ", monthGroup);
 
 
 
@@ -178,8 +179,10 @@
 
                 var month = monthGroup[0]
 
+                // Function to create an object where data objects are stored
+                // by country.
                 function groupByCountry(data) {
-                    const newGroups = data.reduce((groups, item) => {
+                    const newGroups = data.reduce(function(groups, item) {
                     const group = (groups[item.location] || []);
                     group.push(item);
                     groups[item.location] = group;
@@ -194,6 +197,7 @@
 
                 var deaths = [];
 
+                // Function to created the data objects used in the data visualisation
                 function sumDeaths(data) {
 
                     const deaths = [];
@@ -201,43 +205,37 @@
                     for(i in data) {
                 
                         const countryInd = i;
+                        if(countrySelection.includes(i)) {
                         const country = data[countryInd];
                         var totalDeaths = 0;
                         var totalVax = 0;
                         for(d of country) {
                             const deaths = parseInt(d.new_deaths)
-                            const vax = parseInt(d.new_vaccinations_smoothed)
                             if(!isNaN(deaths)) {
                                 totalDeaths += deaths;
 
                             }
-                            if(!isNaN(vax)) {
-                                totalVax += vax;
-
+                        }
+                        
+                        const income = country[0].gdp_per_capita
+                        var vaccinated = 0;
+                        var pop = pop = +country[country.length-1].population;
+                        for(let v = 1; v < country.length; v++) {
+                            var vaxTemp = +country[country.length-v].people_fully_vaccinated
+                            if(!isNaN(vaxTemp) && vaxTemp > 0) {
+                                vaccinated = vaxTemp;
+                                break;
                             }
                         }
-                        if(countrySelection.includes(i)) {
-                            //console.log("Country: ", country[country.length-1].people_fully_vaccinated);
-                            const income = country[0].gdp_per_capita
-                            //const vaccinated = country[country.length-1].people_fully_vaccinated
-                            var vaccinated = 0;
-                            var pop = pop = +country[country.length-1].population;
-                            for(let v = 1; v < country.length; v++) {
-                                var vaxTemp = +country[country.length-v].people_fully_vaccinated
-                                if(!isNaN(vaxTemp) && vaxTemp > 0) {
-                                    vaccinated = vaxTemp;
-                                    break;
-                                }
-                            }
-                            const lng = coordinates[i].long;
-                            const lt = coordinates[i].lat;
-                            deaths.push({country : i,
-                                        deaths: totalDeaths,
-                                        vaxxed: vaccinated,
-                                        population: pop,
-                                        gdp: +income,
-                                        long: +lng,
-                                        lat: +lt})
+                        const lng = coordinates[i].long;
+                        const lt = coordinates[i].lat;
+                        deaths.push({country : i,
+                                    deaths: totalDeaths,
+                                    vaxxed: vaccinated,
+                                    population: pop,
+                                    gdp: +income,
+                                    long: +lng,
+                                    lat: +lt})
                         }
                         
                     }
